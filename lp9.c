@@ -1,109 +1,212 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct node{
-    int data;
+/* NODE DEFINITION */
+struct node {
+    int data;              // header stores count
     struct node *next;
 };
 
+/* FUNCTION DECLARATIONS */
 struct node* createHeader();
-struct node* insertByOrder(struct node *h,int val);
+struct node* insertByOrder(struct node *h, int val);
 struct node* deleteFront(struct node *h);
 struct node* deleteRear(struct node *h);
 struct node* reverse(struct node *h);
 void display(struct node *h);
 
+/* ================= MAIN FUNCTION ================= */
+
 int main()
 {
-    struct node *h=createHeader();
-    int ch,val;
+    struct node *h = createHeader();
+    int ch, val;
 
-    do{
+    do
+    {
         printf("\nLP-9 MENU");
-        printf("\n1.Insert by Order");
-        printf("\n2.Delete Rear");
-        printf("\n3.Delete Front");
-        printf("\n4.Reverse");
-        printf("\n5.Display");
-        printf("\n0.Exit");
-        scanf("%d",&ch);
+        printf("\n1. Insert by Order");
+        printf("\n2. Delete Rear");
+        printf("\n3. Delete Front");
+        printf("\n4. Reverse");
+        printf("\n5. Display");
+        printf("\n0. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &ch);
 
-        switch(ch){
-            case 1: scanf("%d",&val); h=insertByOrder(h,val); break;
-            case 2: h=deleteRear(h); break;
-            case 3: h=deleteFront(h); break;
-            case 4: h=reverse(h); break;
-            case 5: display(h); break;
+        if (ch == 1)
+        {
+            printf("Enter value: ");
+            scanf("%d", &val);
+            h = insertByOrder(h, val);
         }
-    }while(ch!=0);
+
+        if (ch == 2)
+        {
+            h = deleteRear(h);
+        }
+
+        if (ch == 3)
+        {
+            h = deleteFront(h);
+        }
+
+        if (ch == 4)
+        {
+            h = reverse(h);
+        }
+
+        if (ch == 5)
+        {
+            display(h);
+        }
+
+    } while (ch != 0);
 
     return 0;
 }
 
+/* ================= CREATE HEADER ================= */
+
 struct node* createHeader()
 {
-    struct node *h=malloc(sizeof(struct node));
-    h->next=h;
+    struct node *h = (struct node *)malloc(sizeof(struct node));
+    h->data = 0;      // count = 0
+    h->next = h;
     return h;
 }
+
+/* ================= INSERT BY ORDER ================= */
 
 struct node* insertByOrder(struct node *h, int val)
 {
-    struct node *t = h;
-    struct node *n;
+    struct node *temp;
+    struct node *newnode;
 
-    while (t->next != h)
+    temp = h;
+
+    while (temp->next != h)
     {
-        if (t->next->data >= val)
+        if (temp->next->data >= val)
+        {
             break;
-        t = t->next;
+        }
+        temp = temp->next;
     }
 
-    n = (struct node *)malloc(sizeof(struct node));
-    n->data = val;
+    newnode = (struct node *)malloc(sizeof(struct node));
+    newnode->data = val;
 
-    n->next = t->next;
-    t->next = n;
+    newnode->next = temp->next;
+    temp->next = newnode;
 
-    h->data = h->data + 1;   // update count
+    h->data = h->data + 1;
 
     return h;
 }
+
+/* ================= DELETE FRONT ================= */
 
 struct node* deleteFront(struct node *h)
 {
-    if(h->next==h) return h;
-    struct node *t=h->next;
-    h->next=t->next;
-    free(t);
+    struct node *temp;
+
+    if (h->next == h)
+    {
+        printf("List is empty\n");
+        return h;
+    }
+
+    temp = h->next;
+    h->next = temp->next;
+    free(temp);
+
+    h->data = h->data - 1;
+
     return h;
 }
+
+/* ================= DELETE REAR ================= */
 
 struct node* deleteRear(struct node *h)
 {
-    struct node *t=h;
-    while(t->next->next!=h) t=t->next;
-    free(t->next);
-    t->next=h;
+    struct node *temp;
+
+    if (h->next == h)
+    {
+        printf("List is empty\n");
+        return h;
+    }
+
+    temp = h;
+
+    if (temp->next->next == h)
+    {
+        free(temp->next);
+        temp->next = h;
+        h->data = h->data - 1;
+        return h;
+    }
+
+    while (temp->next->next != h)
+    {
+        temp = temp->next;
+    }
+
+    free(temp->next);
+    temp->next = h;
+    h->data = h->data - 1;
+
     return h;
 }
+
+/* ================= REVERSE LIST ================= */
 
 struct node* reverse(struct node *h)
 {
-    struct node *prev=h,*curr=h->next,*next;
-    while(curr!=h){
-        next=curr->next;
-        curr->next=prev;
-        prev=curr;
-        curr=next;
+    struct node *prev;
+    struct node *curr;
+    struct node *next;
+
+    if (h->next == h)
+    {
+        return h;
     }
-    h->next=prev;
+
+    prev = h;
+    curr = h->next;
+
+    while (curr != h)
+    {
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+
+    h->next = prev;
     return h;
 }
 
+/* ================= DISPLAY ================= */
+
 void display(struct node *h)
 {
-    struct node *t=h->next;
-    while(t!=h){ printf("%d ",t->data); t=t->next; }
-}
+    struct node *temp;
 
+    if (h->next == h)
+    {
+        printf("List is empty\n");
+        return;
+    }
+
+    temp = h->next;
+    printf("List: ");
+
+    while (temp != h)
+    {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
