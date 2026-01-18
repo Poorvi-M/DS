@@ -47,14 +47,26 @@ struct node* createHeader()
     return h;
 }
 
-struct node* insertByOrder(struct node *h,int val)
+struct node* insertByOrder(struct node *h, int val)
 {
-    struct node *t=h;
-    while(t->next!=h && t->next->data<val) t=t->next;
-    struct node *n=malloc(sizeof(struct node));
-    n->data=val;
-    n->next=t->next;
-    t->next=n;
+    struct node *t = h;
+    struct node *n;
+
+    while (t->next != h)
+    {
+        if (t->next->data >= val)
+            break;
+        t = t->next;
+    }
+
+    n = (struct node *)malloc(sizeof(struct node));
+    n->data = val;
+
+    n->next = t->next;
+    t->next = n;
+
+    h->data = h->data + 1;   // update count
+
     return h;
 }
 
@@ -94,3 +106,4 @@ void display(struct node *h)
     struct node *t=h->next;
     while(t!=h){ printf("%d ",t->data); t=t->next; }
 }
+
