@@ -1,282 +1,293 @@
-// #include <stdio.h>
-// #include <stdlib.h>
-
-// int *cq, size, front = -1, rear = -1;
-
-// void cEnqueue(int x)
-// {
-//     if((rear + 1) % size == front) return;
-//     if(front == -1) front = 0;
-//     rear = (rear + 1) % size;
-//     cq[rear] = x;
-// }
-
-// void cDequeue()
-// {
-//     if(front == -1) return;
-//     if(front == rear) front = rear = -1;
-//     else front = (front + 1) % size;
-// }
-
-// void cDisplay()
-// {
-//     int i;
-//     if(front == -1) return;
-//     i = front;
-//     while(1)
-//     {
-//         printf("%d ", cq[i]);
-//         if(i == rear) break;
-//         i = (i + 1) % size;
-//     }
-// }
-
-// int main()
-// {
-//     int choice, x;
-
-//     printf("Enter size: ");
-//     scanf("%d", &size);
-//     cq = malloc(size * sizeof(int));
-
-//     do
-//     {
-//         printf("\nLP-13 MENU");
-//         printf("\n1.Circular Enqueue");
-//         printf("\n2.Circular Dequeue");
-//         printf("\n3.Display");
-//         printf("\n0.Exit");
-//         scanf("%d", &choice);
-
-//         switch(choice)
-//         {
-//             case 1: scanf("%d", &x); cEnqueue(x); break;
-//             case 2: cDequeue(); break;
-//             case 3: cDisplay(); break;
-//         }
-//     } while(choice != 0);
-
-//     free(cq);
-//     return 0;
-// }
 #include <stdio.h>
 #include <stdlib.h>
 
-/* ===================== CIRCULAR QUEUE ===================== */
-
-struct CQueue {
+typedef struct {
     int *arr;
-    int front, rear, size;
-};
+    int size;
+    int front, rear;
+} Cqueue;
 
-/* Initialize Circular Queue */
-void initCQueue(struct CQueue *q, int size) {
+void initCQueue(Cqueue *q, int size)
+{
     q->size = size;
-    q->front = q->rear = -1;
-    q->arr = (int *)malloc(size * sizeof(int));
+    q->arr = (int*)malloc(size * sizeof(int));
+    q->front = q->rear = 0;
 }
 
-/* Check if full */
-int isCFull(struct CQueue *q) {
-    return ((q->rear + 1) % q->size == q->front);
+int isEmpty(Cqueue *q)
+{
+    return q->front == q->rear;
 }
 
-/* Check if empty */
-int isCEmpty(struct CQueue *q) {
-    return (q->front == -1);
+int isFull(Cqueue *q)
+{
+    return (q->rear + 1) % q->size == q->front;
 }
 
-/* Enqueue */
-void enqueueC(struct CQueue *q, int val) {
-    if (isCFull(q)) {
-        printf("Circular Queue Overflow\n");
-        return;
+void resize(Cqueue *q)
+{
+    int newsize = q->size * 2;
+    int *newarr = (int*)malloc(newsize * sizeof(int));
+
+    int i = 0;
+    int idx = q->front;
+
+    while(idx != q->rear) {
+        newarr[i++] = q->arr[idx];
+        idx = (idx + 1) % q->size;
     }
 
-    if (q->front == -1)
-        q->front = 0;
+    free(q->arr);
+    q->arr = newarr;
+    q->front = 0;
+    q->rear = i;
+    q->size = newsize;
 
+    printf("Queue resized to %d\n", newsize);
+}
+
+void enqueue(Cqueue *q, int item)
+{
+    if(isFull(q)){
+
+        printf("Allocating more space");
+        resize(q);
+    }
+      
+
+    q->arr[q->rear] = item;
     q->rear = (q->rear + 1) % q->size;
-    q->arr[q->rear] = val;
-
-    printf("Inserted %d\n", val);
 }
 
-/* Dequeue */
-void dequeueC(struct CQueue *q) {
-    if (isCEmpty(q)) {
-        printf("Circular Queue Underflow\n");
+void dequeue(Cqueue *q)
+{
+    if(isEmpty(q)) {
+        printf("Queue Underflow\n");
         return;
     }
 
-    int val = q->arr[q->front];
-
-    if (q->front == q->rear)
-        q->front = q->rear = -1;
-    else
-        q->front = (q->front + 1) % q->size;
-
-    printf("Deleted %d\n", val);
+    printf("Deleted %d\n", q->arr[q->front]);
+    q->front = (q->front + 1) % q->size;
 }
 
-/* Display */
-void displayC(struct CQueue *q) {
-    if (isCEmpty(q)) {
+void peekFront(Cqueue *q)
+{
+    if(isEmpty(q)) {
+        printf("Queue Empty\n");
+        return;
+    }
+    printf("Front element: %d\n", q->arr[q->front]);
+}
+
+void peekRear(Cqueue *q)
+{
+    if(isEmpty(q)) {
+        printf("Queue Empty\n");
+        return;
+    }
+    printf("Rear element: %d\n", q->arr[(q->rear - 1 + q->size) % q->size]);
+}
+
+void displayCQueue(Cqueue *q)
+{
+    if(isEmpty(q)) {
         printf("Queue Empty\n");
         return;
     }
 
+    printf("Circular Queue: ");
     int i = q->front;
-    printf("Queue: ");
-    while (1) {
+    while(i != q->rear) {
         printf("%d ", q->arr[i]);
-        if (i == q->rear)
-            break;
         i = (i + 1) % q->size;
     }
     printf("\n");
 }
 
-/* ===================== PRIORITY QUEUE ===================== */
+int main()
+{
+    Cqueue q;
+    int choice, val, size;
 
-struct PQueue {
-    int *arr;
-    int size;
-    int count;
-};
-
-/* Initialize Priority Queue */
-void initPQueue(struct PQueue *pq, int size) {
-    pq->size = size;
-    pq->count = 0;
-    pq->arr = (int *)malloc(size * sizeof(int));
-}
-
-/* Enqueue (higher value = higher priority) */
-void enqueueP(struct PQueue *pq, int val) {
-    if (pq->count == pq->size) {
-        printf("Priority Queue Overflow\n");
-        return;
-    }
-
-    int i = pq->count - 1;
-    while (i >= 0 && pq->arr[i] < val) {
-        pq->arr[i + 1] = pq->arr[i];
-        i--;
-    }
-
-    pq->arr[i + 1] = val;
-    pq->count++;
-
-    printf("Inserted %d\n", val);
-}
-
-/* Dequeue */
-void dequeueP(struct PQueue *pq) {
-    if (pq->count == 0) {
-        printf("Priority Queue Underflow\n");
-        return;
-    }
-
-    int val = pq->arr[0];
-    for (int i = 0; i < pq->count - 1; i++)
-        pq->arr[i] = pq->arr[i + 1];
-
-    pq->count--;
-    printf("Deleted %d\n", val);
-}
-
-/* Display */
-void displayP(struct PQueue *pq) {
-    if (pq->count == 0) {
-        printf("Queue Empty\n");
-        return;
-    }
-
-    printf("Priority Queue: ");
-    for (int i = 0; i < pq->count; i++)
-        printf("%d ", pq->arr[i]);
-    printf("\n");
-}
-
-/* ===================== MAIN MENU ===================== */
-
-int main() {
-    struct CQueue cq;
-    struct PQueue pq;
-    int choice, sub, val, size;
-
-    printf("Enter Queue Size: ");
+    printf("Enter initial size: ");
     scanf("%d", &size);
-
-    initCQueue(&cq, size);
-    initPQueue(&pq, size);
+    initCQueue(&q, size);
 
     do {
-        printf("\n===== MAIN MENU =====");
-        printf("\n1. Circular Queue");
-        printf("\n2. Priority Queue");
+        printf("\n--- Circular Queue Menu ---");
+        printf("\n1. Enqueue");
+        printf("\n2. Dequeue");
+        printf("\n3. Peek Front");
+        printf("\n4. Peek Rear");
+        printf("\n5. Display");
         printf("\n0. Exit");
         printf("\nEnter choice: ");
         scanf("%d", &choice);
 
-        switch (choice) {
-
-        case 1:
-            do {
-                printf("\n--- Circular Queue ---");
-                printf("\n1. Enqueue");
-                printf("\n2. Dequeue");
-                printf("\n3. Display");
-                printf("\n0. Back");
-                printf("\nEnter choice: ");
-                scanf("%d", &sub);
-
-                switch (sub) {
-                case 1:
-                    printf("Enter value: ");
-                    scanf("%d", &val);
-                    enqueueC(&cq, val);
-                    break;
-                case 2:
-                    dequeueC(&cq);
-                    break;
-                case 3:
-                    displayC(&cq);
-                    break;
-                }
-            } while (sub != 0);
-            break;
-
-        case 2:
-            do {
-                printf("\n--- Priority Queue ---");
-                printf("\n1. Enqueue");
-                printf("\n2. Dequeue");
-                printf("\n3. Display");
-                printf("\n0. Back");
-                printf("\nEnter choice: ");
-                scanf("%d", &sub);
-
-                switch (sub) {
-                case 1:
-                    printf("Enter value: ");
-                    scanf("%d", &val);
-                    enqueueP(&pq, val);
-                    break;
-                case 2:
-                    dequeueP(&pq);
-                    break;
-                case 3:
-                    displayP(&pq);
-                    break;
-                }
-            } while (sub != 0);
-            break;
+        switch(choice) {
+            case 1:
+                printf("Enter value: ");
+                scanf("%d", &val);
+                enqueue(&q, val);
+                break;
+            case 2:
+                dequeue(&q);
+                break;
+            case 3:
+                peekFront(&q);
+                break;
+            case 4:
+                peekRear(&q);
+                break;
+            case 5:
+                displayCQueue(&q);
         }
-    } while (choice != 0);
+    } while(choice != 0);
 
-    free(cq.arr);
+    free(q.arr);
+    return 0;
+}
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int data;
+    int priority;
+} Element;
+
+typedef struct {
+    Element *arr;
+    int size;
+    int capacity;
+} PriorityQueue;
+
+/* Function prototypes */
+void initPQ(PriorityQueue *pq);
+void insert(PriorityQueue *pq, int data, int priority);
+void deleteFront(PriorityQueue *pq);
+void display(PriorityQueue *pq);
+int isEmpty(PriorityQueue *pq);
+int isFull(PriorityQueue *pq);
+void resize(PriorityQueue *pq);
+
+/* MAIN */
+int main()
+{
+    PriorityQueue pq;
+    int choice, data, priority;
+
+    initPQ(&pq);
+
+    do {
+        printf("\n--- PRIORITY QUEUE MENU ---");
+        printf("\n1. Insert (Data + Priority)");
+        printf("\n2. Delete Highest Priority");
+        printf("\n3. Display");
+        printf("\n0. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                printf("Enter data: ");
+                scanf("%d", &data);
+                printf("Enter priority: ");
+                scanf("%d", &priority);
+                insert(&pq, data, priority);
+                break;
+
+            case 2:
+                deleteFront(&pq);
+                break;
+
+            case 3:
+                display(&pq);
+                break;
+        }
+
+    } while(choice != 0);
+
     free(pq.arr);
     return 0;
+}
+
+/* INITIALIZE */
+void initPQ(PriorityQueue *pq)
+{
+    pq->capacity = 4;   // small initial size
+    pq->size = 0;
+    pq->arr = (Element*)malloc(pq->capacity * sizeof(Element));
+}
+
+/* CHECK EMPTY */
+int isEmpty(PriorityQueue *pq)
+{
+    return pq->size == 0;
+}
+
+/* CHECK FULL */
+int isFull(PriorityQueue *pq)
+{
+    return pq->size == pq->capacity;
+}
+
+/* RESIZE */
+void resize(PriorityQueue *pq)
+{
+    pq->capacity *= 2;
+    pq->arr = (Element*)realloc(pq->arr, pq->capacity * sizeof(Element));
+    printf("Allocating more memory...\n");
+}
+
+/* INSERT BY PRIORITY */
+void insert(PriorityQueue *pq, int data, int priority)
+{
+    if(isFull(pq))
+        resize(pq);
+
+    int i = pq->size - 1;
+
+    /* Shift elements based on priority */
+    while(i >= 0 && pq->arr[i].priority < priority) {
+        pq->arr[i + 1] = pq->arr[i];
+        i--;
+    }
+
+    pq->arr[i + 1].data = data;
+    pq->arr[i + 1].priority = priority;
+    pq->size++;
+
+    printf("Inserted (%d, priority %d)\n", data, priority);
+}
+
+/* DELETE HIGHEST PRIORITY */
+void deleteFront(PriorityQueue *pq)
+{
+    if(isEmpty(pq)) {
+        printf("Priority Queue is EMPTY\n");
+        return;
+    }
+
+    printf("Deleted: %d (priority %d)\n",
+           pq->arr[0].data,
+           pq->arr[0].priority);
+
+    for(int i = 0; i < pq->size - 1; i++)
+        pq->arr[i] = pq->arr[i + 1];
+
+    pq->size--;
+}
+
+/* DISPLAY */
+void display(PriorityQueue *pq)
+{
+    if(isEmpty(pq)) {
+        printf("Priority Queue is EMPTY\n");
+        return;
+    }
+
+    printf("Priority Queue:\n");
+    printf("Data  Priority\n");
+    for(int i = 0; i < pq->size; i++)
+        printf("%4d  %8d\n", pq->arr[i].data, pq->arr[i].priority);
 }
